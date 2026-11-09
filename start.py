@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Bootstrap and run the SiliconCrew backend, frontend, and Docker engine."""
 
+import grp
 import hashlib
 import os
 from pathlib import Path
+import pwd
+import shlex
 import shutil
 import signal
 import subprocess
@@ -13,6 +16,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parent
+DOCKER_SOCKET_GROUP = "siliconcrew"
 VENV = ROOT / ".venv"
 VENV_PYTHON = VENV / "bin" / "python"
 FRONTEND = ROOT / "frontend"
@@ -70,6 +74,37 @@ def ensure_environment():
         print("Created .env from .env.example; add your LLM provider API key there.", flush=True)
 
 
+def _docker_socket_group():
+    try:
+        socket_gid = os.stat("/var/run/docker.sock").st_gid
+        return grp.getgrgid(socket_gid).gr_name
+    except (KeyError, OSError):
+        return DOCKER_SOCKET_GROUP
+
+
+def _docker_group_needs_refresh(group_name):
+    try:
+        docker_gid = grp.getgrnam(group_name).gr_gid
+        account = pwd.getpwuid(os.getuid())
+        account_groups = os.getgrouplist(account.pw_name, account.pw_gid)
+    except (KeyError, OSError):
+        return False
+
+    process_groups = set(os.getgroups()) | {os.getegid()}
+    return docker_gid in account_groups and docker_gid not in process_groups
+
+
+def _reexec_with_docker_group(group_name):
+    newgrp = shutil.which("newgrp")
+    if not newgrp:
+        return False
+
+    command = shlex.join([sys.executable, str(ROOT / "start.py"), *sys.argv[1:]])
+    print("Refreshing Docker group permissions and restarting SiliconCrew...", flush=True)
+    os.execv(newgrp, [newgrp, group_name, command])
+    return True  # os.execv only returns on failure
+
+
 def ensure_docker():
     docker = shutil.which("docker")
     if not docker:
@@ -87,9 +122,13 @@ def ensure_docker():
 
     error = (result.stderr + result.stdout).strip()
     if "permission denied" in error.lower():
+        socket_group = _docker_socket_group()
+        if _docker_group_needs_refresh(socket_group) and _reexec_with_docker_group(socket_group):
+            raise RuntimeError(f"Could not restart SiliconCrew with the {socket_group} group.")
         raise RuntimeError(
-            "Docker socket permission denied. Run `sudo usermod -aG docker $USER`, "
-            "then log out and back in before starting the app."
+            f"Docker socket permission denied. Add your user to the {socket_group} group "
+            f"(`sudo usermod -aG {socket_group} $USER`), then start SiliconCrew from a session "
+            f"with that group (`newgrp {socket_group}` or log out and back in)."
         )
 
     systemctl = shutil.which("systemctl")

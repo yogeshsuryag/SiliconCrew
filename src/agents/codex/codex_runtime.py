@@ -96,10 +96,13 @@ class CodexRuntimeHandler:
         # The bound MCP subprocess must read the SAME state.db as the app (so it
         # finds the session it is bound to). Pass the app's data dir through as
         # the engine's mcp_data_dir → config.toml's RTL_DATA_DIR.
+        runtime_data_dir = mcp_data_dir or os.path.join(os.path.expanduser("~"), ".siliconcrew")
         self._engine_factory = engine_factory or (lambda: CodexEngine(
             enabled=enabled,
-            state_dir=os.environ.get("SILICONCREW_CODEX_STATE_DIR", "/app/codex-state"),
-            local_sqlite_dir=os.environ.get("SILICONCREW_CODEX_SQLITE_DIR", "/app/codex-sqlite"),
+            state_dir=os.environ.get("SILICONCREW_CODEX_STATE_DIR")
+            or os.path.join(runtime_data_dir, "codex-runtime"),
+            local_sqlite_dir=os.environ.get("SILICONCREW_CODEX_SQLITE_DIR")
+            or os.path.join(runtime_data_dir, "codex-sqlite"),
             mcp_data_dir=mcp_data_dir,
             warm_pool=self._pool,
         ))

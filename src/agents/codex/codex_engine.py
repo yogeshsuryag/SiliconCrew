@@ -358,7 +358,8 @@ class CodexEngine:
             or os.path.join(os.path.expanduser("~"), ".siliconcrew", "codex-runtime")
         )
         self.local_sqlite_dir = os.path.abspath(
-            local_sqlite_dir or os.environ.get("SILICONCREW_CODEX_SQLITE_DIR") or "/app/codex-sqlite"
+            local_sqlite_dir or os.environ.get("SILICONCREW_CODEX_SQLITE_DIR")
+            or os.path.join(os.path.expanduser("~"), ".siliconcrew", "codex-sqlite")
         )
         self.mcp_data_dir = os.path.abspath(
             mcp_data_dir or os.environ.get("RTL_DATA_DIR") or self.state_dir

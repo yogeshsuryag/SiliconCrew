@@ -160,7 +160,9 @@ class CodexAccountAuthManager:
         self._jobs: dict[str, _LoginJob] = {}
         self._lock = threading.Lock()
         # SQLite/rollout scratch on local disk (never the durable auth home).
-        self._local_sqlite = os.environ.get("SILICONCREW_CODEX_SQLITE_DIR", "/app/codex-sqlite")
+        self._local_sqlite = os.environ.get("SILICONCREW_CODEX_SQLITE_DIR") or str(
+            self.state_dir / "codex-sqlite"
+        )
 
     def auth_home(self, user_id: str) -> str:
         return str(self.state_dir / "codex-account-auth" / "users" / _safe_component(user_id))
