@@ -10,8 +10,8 @@ Exports:
     ``run_docker_command`` return shape).
   * ``OrfsRunner`` — the Protocol (``.run(OrfsRequest) -> OrfsResult``).
   * ``JobExecution`` — a single cloud job's terminal state.
-  * ``RemoteOrfsRunner`` — an ``OrfsRunner`` that speaks the HTTP wire contract
-    in ``deploy/ORFS_SERVICE.md`` (tar run dir → POST → poll → untar artifacts).
+  * ``RemoteOrfsRunner`` — an ``OrfsRunner`` that speaks the HTTP contract
+    implemented by ``src.platform_engines.orfs_service``.
   * ``tar_dir_b64`` / ``untar_b64_into`` — path-traversal-safe tar helpers used
     by both client and service.
 

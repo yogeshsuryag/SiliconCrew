@@ -1,3 +1,4 @@
+# LLM agent and model providers
 langchain>=1.2.10,<2.0.0
 langchain-core>=1.2.0,<2.0.0
 langchain-google-genai>=4.2.1,<5.0.0
@@ -7,18 +8,9 @@ langchain-anthropic>=1.3.4,<2.0.0
 langgraph>=1.0.10,<2.0.0
 langgraph-checkpoint-sqlite>=2.0.11
 aiosqlite>=0.19.0
-# Durable checkpointer on hosted (Cloud SQL Postgres). Imported lazily only in
-# the postgres branch — self-host stays on sqlite and never needs these at
-# runtime (psycopg[binary] below is already present for the metadata store).
-langgraph-checkpoint-postgres>=2.0.0
-psycopg-pool>=3.2.0
-# <2: mcp 2.0.0 (released ~2026-07-30) breaks the 1.x server API this codebase
-# targets (e.g. mcp.server.lowlevel.server.request_ctx is gone) — an unpinned
-# install fails CI collection today and would ship a broken MCP server in the
-# next image build. Raise deliberately, with a migration.
+
+# API and local MCP server
 mcp[cli]>=1.0.0,<2
-streamlit>=1.40.1
-gradio>=4.0.0
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 websockets>=12.0
@@ -26,27 +18,15 @@ watchdog
 pyyaml
 python-dotenv
 rich
-matplotlib
-gdstk
+
+# RTL verification and artifact viewers
 vcdvcd
 numpy
+matplotlib
+gdstk
 cocotb
 cocotb-test
+
+# Local tests
 pytest
-# Async test support: only tests decorated @pytest.mark.asyncio run as async
-# (asyncio_mode = strict in pytest.ini). Keeps the marker honest and silences
-# the PytestUnknownMarkWarning.
 pytest-asyncio>=1.0.0
-psycopg[binary]>=3.1.8
-google-cloud-storage
-google-cloud-kms
-google-cloud-run
-google-cloud-logging
-# Remote-MCP auth (hosted only): validate WorkOS-issued JWTs (RS256 via JWKS).
-# Standard JWT-verify library — no hand-rolled crypto. Unused in local/self-host.
-pyjwt[crypto]>=2.0.0
-# Codex agent runtime (optional, flag-gated by CODEX_ENABLED — see
-# src/agents/codex/). Lazily imported, so this is only needed when the flag is
-# on. Pin the verified SDK release so its generated app-server contracts stay
-# aligned with the adapter and event translation tests.
-openai-codex==0.144.4

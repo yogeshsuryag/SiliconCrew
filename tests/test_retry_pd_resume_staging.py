@@ -8,13 +8,10 @@ this test locks both without Docker/ORFS by driving ``_retry_pd_worker`` with a
 recording fake OrfsRunner:
 
 1. The checkpoint is physically present in the run dir at
-   ``orfs_results/<platform>/<top>/base/3_place.odb`` BEFORE ORFS runs. This is
-   exactly what the self-host bind mount exposes and what the cloud job's
-   entrypoint stage-in copies into ``flow/results`` (deploy/orfs_job/
-   entrypoint.sh). If the worker stops staging it, CTS aborts.
-2. The ORFS volume map still resolves ``orfs_results`` → the container results
-   path, so the cloud entrypoint stage-in has the mapping it needs to copy the
-   staged tree to where ``do-cts`` reads it.
+   ``orfs_results/<platform>/<top>/base/3_place.odb`` BEFORE ORFS runs. The
+   worker must stage it into the location where ``do-cts`` reads it.
+2. The ORFS volume map still resolves ``orfs_results`` to the worker's results
+   path so resumed stages can consume the checkpoint.
 
 It also guards the honest-state half: a failed resume must not report a
 netlist artifact that isn't physically on disk.

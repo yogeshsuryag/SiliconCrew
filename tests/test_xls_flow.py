@@ -35,7 +35,7 @@ def isolated_workspace(tmp_path, monkeypatch):
 @pytest.fixture
 def require_xls_and_iverilog():
     if not _docker_image_available(XLS_IMAGE):
-        pytest.skip(f"Docker image {XLS_IMAGE!r} is not available. Build it with Dockerfile.xls.")
+        pytest.skip(f"Optional XLS image {XLS_IMAGE!r} is not available.")
     if not shutil.which("iverilog"):
         pytest.skip("iverilog is not available; XLS generated-Verilog simulation skipped.")
 

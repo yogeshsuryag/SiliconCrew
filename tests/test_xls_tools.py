@@ -43,7 +43,7 @@ def isolated_workspace(tmp_path, monkeypatch):
 @pytest.fixture
 def require_xls_image():
     if not _docker_image_available(XLS_IMAGE):
-        pytest.skip(f"Docker image {XLS_IMAGE!r} is not available. Build it with Dockerfile.xls.")
+        pytest.skip(f"Optional XLS image {XLS_IMAGE!r} is not available.")
 
 
 @pytest.fixture

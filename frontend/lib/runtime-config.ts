@@ -1,11 +1,4 @@
-// Runtime (NOT build-time) backend configuration.
-//
-// Next.js inlines every `NEXT_PUBLIC_*` env var at *build* time, so a Docker
-// image built without the backend URL bakes in a wrong fallback (the classic
-// `localhost:8000` -> ECONNREFUSED on Cloud Run). To keep the image 100%
-// environment-agnostic ("build once, run anywhere"), the server layout reads
-// plain (non-public) env vars *per request* and injects them into
-// `window.__SC_ENV__`; the browser reads that for both REST and WebSocket URLs.
+// Backend endpoints and optional sign-in settings shared by server and browser.
 
 export type RuntimeEnv = {
   apiUrl: string;
@@ -28,9 +21,7 @@ declare global {
 // Global name shared between the server injector and the client reader.
 export const SC_ENV_GLOBAL = "__SC_ENV__";
 
-// Local-dev defaults: a backend on :8000, same host, and no OAuth (self-host /
-// zero-config). Production never relies on these — Terraform sets the env and
-// the layout injects them.
+// Local demo defaults: backend on :8000 and no sign-in configuration.
 const DEV_DEFAULT: RuntimeEnv = {
   apiUrl: "http://localhost:8000",
   wsUrl: "ws://localhost:8000",
@@ -50,10 +41,7 @@ function envFlag(name: string, fallbackName?: string): boolean {
   return ["1", "true", "yes", "on"].includes((raw || "").trim().toLowerCase());
 }
 
-// Server-side: read runtime env (NOT NEXT_PUBLIC_, so it is read at request
-// time, not inlined at build). Called by the root layout to inject __SC_ENV__.
-// GOOGLE_CLIENT_ID is public but kept runtime so a single image serves every
-// environment (self-host with no auth, hosted with auth) without rebuilding.
+// Server-side: read optional backend and sign-in settings for the root layout.
 export function readServerEnv(): RuntimeEnv {
   const apiUrl = process.env.API_URL || DEV_DEFAULT.apiUrl;
   const wsUrl = process.env.WS_URL || deriveWsUrl(apiUrl);

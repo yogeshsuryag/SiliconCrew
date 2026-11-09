@@ -253,7 +253,7 @@ function SelfHostState({ envUsable }: { envUsable: Set<string> }) {
         })}
       </ul>
       <a
-        href="https://github.com/naman-ranka/siliconcrew/blob/main/frontend/.env.example"
+        href="https://github.com/mfzhang/LLM-RTL-siliconcrew/blob/main/.env.example"
         target="_blank"
         rel="noreferrer"
         className="inline-flex items-center gap-1 text-xs text-info hover:underline outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"

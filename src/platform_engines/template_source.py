@@ -7,13 +7,9 @@ hosted deployment reads a small ``index.json`` object from a public GCS bucket
 and fetches per-bundle archives on fork. One factory chooses which, ONCE, from
 settings — call sites depend only on the :class:`TemplateSource` protocol.
 
-Why a dynamic GCS index at all: baking bundles into the backend image forces a
-commit → image rebuild → redeploy to publish or update an example. Reading the
-gallery from a bucket lets an operator publish by uploading (see
-``scripts/publish_templates.py``) with no redeploy. The index is ONE small
-object listing every template plus the preview metadata the cards need
-(``file_count``/``run_count``/``files``/``conversations`` — a hosted instance has
-no local workspace to walk, so those are computed at publish time and persisted).
+The demo reads examples directly from the local ``examples/`` directory. The
+GCS-backed source remains an optional adapter for external integrations; it is
+not configured or required by the local demo.
 
 Honest offline (invariant 4): a store outage must never masquerade as an empty
 gallery. :class:`GcsTemplateSource` keeps the last good index in an in-process

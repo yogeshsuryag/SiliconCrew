@@ -808,8 +808,7 @@ def make_run_stager(
         return handle
 
     def stage_out(run_dir: str, handle: str) -> None:
-        # The Job uploads its produced artifacts back under "<handle>/out"; pull
-        # them into the local run dir. (The Job entrypoint lives in deploy/.)
+        # Pull the completed job's artifacts into the local run directory.
         store.get_tree(f"{handle}/out", run_dir)
 
     return stage_in, stage_out

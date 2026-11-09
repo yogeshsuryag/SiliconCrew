@@ -3,7 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import { Hero } from "@/components/branding/Hero";
 import { LandingFooter } from "@/components/branding/LandingFooter";
 import { Logo } from "@/components/branding/Logo";
-import { REPO_URL, ISSUES_URL, DOCS_URL, LICENSE_URL, CVDP_RESULT } from "@/components/branding/links";
+import { REPO_URL, ISSUES_URL, DOCS_URL, LICENSE_URL } from "@/components/branding/links";
 
 describe("Logo", () => {
   it("renders a themeable svg mark (currentColor stroke)", () => {
@@ -18,7 +18,7 @@ describe("Hero (open-source identity strip)", () => {
   it("shows the honest README tagline and the flow line", () => {
     render(<Hero />);
     expect(
-      screen.getByText("An autonomous LLM agent for RTL design, verification, and synthesis.")
+      screen.getByText("An LLM-assisted demo for RTL design and verification.")
     ).toBeInTheDocument();
     expect(screen.getByText(/spec → RTL → lint → simulate/)).toBeInTheDocument();
   });
@@ -31,15 +31,9 @@ describe("Hero (open-source identity strip)", () => {
     expect(screen.getByRole("link", { name: /^Issues$/ })).toHaveAttribute("href", ISSUES_URL);
   });
 
-  it("cites the CVDP result only as sourced from the README", () => {
+  it("shows the demo technologies", () => {
     render(<Hero />);
-    expect(screen.getByText(CVDP_RESULT.value)).toBeInTheDocument();
-    expect(screen.getByText(CVDP_RESULT.label)).toBeInTheDocument();
-  });
-
-  it("names the open EDA tools for designer credibility", () => {
-    render(<Hero />);
-    for (const tool of ["OpenROAD", "Yosys", "Icarus Verilog", "Verilator", "sky130"]) {
+    for (const tool of ["Verilog", "Icarus Verilog", "MCP"]) {
       expect(screen.getByText(tool)).toBeInTheDocument();
     }
   });

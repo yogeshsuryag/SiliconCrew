@@ -1,19 +1,13 @@
 """Run a cocotb testbench for the agent's self-verification (engine-routed).
 
 Execution is delegated to ``get_tool_engine()``:
-  * **docker** (local default): the digest-pinned CVDP reference container
-    ``ghcr.io/hdl/sim/osvb`` — the SAME image the benchmark is graded in, so a
-    self-PASS predicts the hidden-harness verdict. Named container + hard-kill on
-    timeout (a non-terminating sim cannot leak a runaway container).
-  * **native** (hosted / Cloud Run): the same cocotb runner runs as a subprocess
-    directly in the per-session workspace using the host's ``iverilog`` + cocotb
-    (both present in the app image) — no Docker. (Fidelity note: native uses the
-    app image's cocotb/iverilog, not the osvb grader image; grading still runs in
-    the osvb container.)
+  * **native** (default): runs in the per-session workspace using host
+    ``iverilog`` and cocotb; no Docker is required.
+  * **docker** (optional): runs in the configured simulator container.
 
 The runner script + ``SC_*`` env are identical across engines, and the script
 adds the **cwd** to ``sys.path`` (so the test module imports under both the
-container ``-w`` dir and the native ``cwd``). Sources are workspace-relative, so
+container working directory and the native ``cwd``). Sources are workspace-relative, so
 the command is engine-agnostic. Non-termination → status="TIMEOUT" (treat as
 FAIL), never an opaque hang.
 """
@@ -27,12 +21,12 @@ import uuid
 
 from src.platform_engines.tool_engine import get_tool_engine
 
-# Pinned to the SAME digest the grader uses (cvdp-pipeline/regrade_docker.py) so self-check == grade env.
+# Optional container image for isolated cocotb runs; native mode is the demo default.
 DEFAULT_OSVB_IMAGE = (
     "ghcr.io/hdl/sim/osvb@sha256:"
     "6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434"
 )
-# Keep the default just under codex's ~120s MCP tool-call timeout so we always return a clean
+# Keep the default just under typical MCP tool-call timeouts so we return a clean
 # structured result rather than letting the client time out. Raise both together for heavy suites.
 DEFAULT_TIMEOUT = 110
 
@@ -58,7 +52,7 @@ runner = get_runner(sim)
 _bk = dict(verilog_sources=sources, hdl_toplevel=toplevel, build_dir=build_dir, always=True)
 try:
     # Default a 1ns/1ps timescale so Clock(...ns) self-tests work even when the agent's TB
-    # doesn't set one (real CVDP harnesses set it via .env). Older runners lack the kwarg.
+    # doesn't set one. Older runners lack the kwarg.
     try:
         runner.build(timescale=("1ns", "1ps"), **_bk)
     except TypeError:

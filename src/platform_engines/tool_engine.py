@@ -6,15 +6,13 @@ out to Docker, which does not work on Cloud Run (no nested containers). This
 module puts their *execution* behind one small, config-selected interface,
 mirroring the ``OrfsRunner`` pattern:
 
-  * :class:`DockerToolEngine` — today's behavior: run the command in a container
-    via :func:`src.tools.run_docker.run_docker_command` (the local default, so
-    open-source contributors stay plug-and-play).
   * :class:`NativeToolEngine` — run the command directly as a subprocess in the
-    real per-session workspace ``cwd`` (hosted / Cloud Run; ~no overhead, keeps
-    the interactive edit-run loop fast).
+    real per-session workspace ``cwd`` (the local demo default).
+  * :class:`DockerToolEngine` — optional container execution through
+    :func:`src.tools.run_docker.run_docker_command`.
 
-Chosen once by the ``SIM_ENGINE`` setting (``native`` when hosted, else
-``docker``). The tool files keep ALL their own command-building + output parsing
+Chosen once by the ``SIM_ENGINE`` setting (``native`` by default). The tool
+files keep ALL their own command-building + output parsing
 and call ``get_tool_engine().run(...)`` — there is **no** ``if hosted`` branch in
 the tools.
 
@@ -170,8 +168,8 @@ _ENGINE: Optional[ToolEngine] = None
 def get_tool_engine() -> ToolEngine:
     """Return the process-wide tool engine selected by ``SIM_ENGINE``.
 
-    ``docker`` (local default) → :class:`DockerToolEngine`;
-    ``native`` (hosted default) → :class:`NativeToolEngine`.
+    ``native`` (default) → :class:`NativeToolEngine`;
+    ``docker`` → :class:`DockerToolEngine`.
     """
     global _ENGINE
     if _ENGINE is not None:

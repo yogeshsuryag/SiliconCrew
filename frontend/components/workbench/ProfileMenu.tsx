@@ -14,7 +14,7 @@ import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export const REPO_URL = "https://github.com/naman-ranka/siliconcrew";
+export const REPO_URL = "https://github.com/mfzhang/LLM-RTL-siliconcrew";
 
 /** Initials for the avatar tile: "Jane Doe" → "JD", "jane@x.com" → "J". */
 export function initialsFor(name?: string | null, email?: string | null): string {

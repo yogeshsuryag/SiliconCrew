@@ -1,7 +1,7 @@
 """Live/partial log staging read path (Fix C).
 
-A hosted ORFS Job now snapshots its logs/ tree to <handle>/logs_partial while it
-runs (deploy/orfs_job/entrypoint.sh). The backend falls back to that snapshot
+A remote ORFS worker can snapshot its logs/ tree to <handle>/logs_partial while it
+runs. The backend falls back to that snapshot
 when a run has no staged-back final logs — so a live or timeout-killed run is
 inspectable instead of showing an empty tail — and labels the source honestly as
 partial. A completed run with real logs must ignore the partial snapshot.

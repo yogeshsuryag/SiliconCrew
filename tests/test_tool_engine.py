@@ -4,7 +4,7 @@ import os
 import pytest
 
 import src.platform_engines.tool_engine as te
-from src.platform_engines.settings import reset_settings_cache
+from src.platform_engines.settings import get_settings, reset_settings_cache
 
 
 @pytest.fixture(autouse=True)
@@ -19,11 +19,13 @@ def _reset():
 # --- selection --------------------------------------------------------------
 
 
-def test_default_is_docker(monkeypatch):
+def test_default_is_native(monkeypatch):
     monkeypatch.delenv("SILICONCREW_HOSTED", raising=False)
     monkeypatch.delenv("SIM_ENGINE", raising=False)
+    monkeypatch.delenv("PYTHON_ENGINE", raising=False)
     reset_settings_cache()
-    assert te.get_tool_engine().mode == "docker"
+    assert te.get_tool_engine().mode == "native"
+    assert get_settings().python_engine == "native"
 
 
 def test_native_when_sim_engine_set(monkeypatch):

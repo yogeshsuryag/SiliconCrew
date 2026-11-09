@@ -2022,8 +2022,8 @@ def _partial_logs_dir(run_dir: str) -> str:
 def stage_partial_logs_for_read(run_dir: str) -> Optional[float]:
     """Best-effort pull of a live/killed hosted run's partial ORFS logs.
 
-    The Cloud Run Job periodically snapshots its ``logs/`` tree to
-    ``<handle>/logs_partial`` (see deploy/orfs_job/entrypoint.sh) so a run is
+    The remote ORFS worker periodically snapshots its ``logs/`` tree to
+    ``<handle>/logs_partial`` so a run is
     inspectable BEFORE — or entirely without — a final ``out.tar.gz``: a job
     killed by the task timeout used to leave zero platform-visible logs. This
     stages that snapshot into ``<run_dir>/orfs_logs_partial`` for the log

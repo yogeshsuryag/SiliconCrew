@@ -121,7 +121,7 @@ def protected_resource_metadata(settings=None, *, resource_url: Optional[str] = 
         "scopes_supported": scopes,
         "bearer_methods_supported": ["header"],
         "resource_name": "SiliconCrew",
-        "resource_documentation": "https://github.com/naman-ranka/siliconcrew",
+        "resource_documentation": "https://github.com/mfzhang/LLM-RTL-siliconcrew",
     }
     jwks_uri = getattr(settings, "mcp_jwks_url", "") or ""
     if jwks_uri:

@@ -1,13 +1,11 @@
 """Run SymbiYosys (SBY) formal verification through the ToolEngine seam.
 
 Execution is delegated to ``get_tool_engine()``:
-  * **docker** (local default): the ``siliconcrew-sby`` container (sby + yosys + z3),
-    named + hard-killed on timeout so a non-terminating proof cannot orphan a container.
-  * **native** (hosted / Cloud Run): ``sby`` runs as a subprocess in the per-session
-    workspace — needs ``sby`` + ``z3`` on PATH (installed in the hosted image).
+  * **native** (default): ``sby`` runs as a subprocess in the per-session
+    workspace — needs ``sby`` + ``z3`` on PATH.
+  * **docker** (optional): runs in a configured container when that image is available.
 
-Robustness (added after a forensics pass over real runs, where the dominant failures were NOT the
-solver but agent-written .sby mistakes — see cvdp-pipeline/research/AUDIT_XLS_TOOLING_LEAK.md):
+Robustness includes normalization of common agent-written .sby path and solver mistakes:
   1. Runs from the **workspace root** deterministically (not the .sby's own dir), so a .sby placed in
      a subdir (e.g. formal/) no longer breaks relative [files] paths.
   2. **Normalizes the .sby before running**: resolves every [files] path against the workspace and
@@ -24,7 +22,7 @@ import tempfile
 
 from src.platform_engines.tool_engine import get_tool_engine
 
-DEFAULT_SBY_IMAGE = "siliconcrew-sby:latest"   # openroad/orfs + z3 (build: docker build -t siliconcrew-sby:latest - < Dockerfile.sby)
+DEFAULT_SBY_IMAGE = "siliconcrew-sby:latest"   # optional Docker override; native is the demo default
 DEFAULT_TIMEOUT = 110                           # under codex's ~120s MCP tool-call limit
 INSTALLED_SOLVER = "z3"                         # the solver guaranteed present in both images
 _UNAVAILABLE_SOLVERS = ("boolector", "btor", "yices")  # not installed; rewrite to z3

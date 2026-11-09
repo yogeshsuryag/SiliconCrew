@@ -73,11 +73,9 @@ const DROP_FROM_RESPONSE = new Set([...HOP_BY_HOP, "content-encoding", "content-
 const NULL_BODY_STATUS = new Set([204, 205, 304]);
 
 /**
- * Backend origin, read at REQUEST time. `API_URL` is the runtime variable the
- * deployment sets (see lib/runtime-config.ts + deploy/terraform/frontend.tf);
- * `NEXT_PUBLIC_API_URL` is inlined at BUILD time, so it is only a legacy
- * fallback — relying on it baked `http://localhost:8000` into every image and
- * made this route fail with a blanket 502 in the hosted deployment.
+ * Backend origin for the local frontend proxy. `API_URL` can override the
+ * default when the backend runs on a different host; the browser-side runtime
+ * configuration is defined in lib/runtime-config.ts.
  */
 function backendOrigin(): string {
   return (

@@ -4,9 +4,7 @@ Covers the self-host fork backend (create-first ordering, workspace copy,
 provenance, netlist/manifest rewrites, rollback, copy ceilings), the export
 utility round-trip, the pure transcript renderer, and the REST surface — all
 following the existing test patterns (SessionManager over a tmp workspace, no
-pytest-asyncio: async is driven with asyncio.run inside the utilities). The
-hosted-fork path (cloud workspace + gcs source, tenancy, A15) lives in
-``test_hosted_fork.py``.
+pytest-asyncio: async is driven with asyncio.run inside the utilities).
 """
 import asyncio
 import json
@@ -18,7 +16,6 @@ from src.utils.session_manager import SessionManager
 from src.utils import templates as T
 from src.utils.bundles import BundleTooLarge, copytree_guarded, scan_for_secrets
 from src.utils.transcript import render_transcript, slugify
-from scripts import split_bundle_binaries as SPLIT
 
 
 # ---------------------------------------------------------------------------
@@ -198,33 +195,6 @@ def test_fork_rewrites_netlist_path_into_fork_run_dir(sm, examples_dir):
     assert "other\\machine" not in np and "ORIGINAL" not in np
 
 
-def test_fork_of_split_bundle_degrades_honestly(sm, examples_dir):
-    """A split bundle (binaries not fetched) still forks; the missing netlist
-    re-derives to None instead of a dangling path, and the run stays listable.
-
-    The fixture bundle's only ``.v`` lives under ``orfs_results/`` (the split's
-    synthesized-netlist target) with no ``inputs/`` netlist, so ``_find_netlist``
-    finds nothing and honestly resolves to None — the self-host-without-fetch
-    state the §3D honest-degradation contract describes.
-    """
-    bundle = os.path.join(examples_dir, "demo_fifo")
-    entries = SPLIT.split_bundle(bundle, apply=True)
-    assert any(e["path"].endswith("fifo_final.v") for e in entries)  # netlist moved out
-    ws_src = os.path.join(bundle, "workspace")
-    assert os.path.isfile(os.path.join(ws_src, SPLIT.SC_BINARIES_NAME))
-
-    fid = T.fork_from_template(sm, "demo_fifo", examples_dir=examples_dir)
-    ws = sm.get_workspace_path(fid)
-    # Fork carries the manifest (so the backend can tell "not fetched" from
-    # "never produced") and stays crash-free.
-    assert os.path.isfile(os.path.join(ws, SPLIT.SC_BINARIES_NAME))
-    meta = json.load(open(os.path.join(ws, "synth_runs", "synth_0001", "run_meta.json")))
-    assert meta["netlist_path"] is None
-    # The run is still present + listable (run_meta + completion marker intact).
-    assert meta["status"] == "completed"
-    assert os.path.isfile(os.path.join(ws, "synth_runs", "synth_0001", "completion.event"))
-
-
 def test_fork_preserves_completion_marker_and_terminal_status(sm, examples_dir):
     """Copied completion.event + terminal status → the run never re-announces."""
     fid = T.fork_from_template(sm, "demo_fifo", examples_dir=examples_dir)
@@ -266,11 +236,6 @@ def test_half_fork_rolls_back_dir_and_metadata(sm, examples_dir):
     assert after == before  # rolled back: no orphan session row
     # No leftover workspace dir for the base tag.
     assert not os.path.isdir(os.path.join(sm.base_dir, "demo-fifo"))
-
-
-# The hosted fork (cloud workspace + gcs/local source, rollback, tenancy, A15)
-# is exercised in test_hosted_fork.py — the gate that used to raise here was
-# lifted in Item 3.
 
 
 # ---------------------------------------------------------------------------
@@ -515,7 +480,7 @@ def test_preview_hides_bookkeeping_files(sm, examples_dir):
     """A13: .sc_binaries.json / .source_template.json are real on disk but must
     not appear in the template preview file list."""
     bundle = os.path.join(examples_dir, "demo_fifo")
-    SPLIT.split_bundle(bundle, apply=True)  # writes workspace/.sc_binaries.json
+    _write(os.path.join(bundle, "workspace", ".sc_binaries.json"), {"files": []})
     _write(os.path.join(bundle, "workspace", ".source_template.json"), {"id": "x"})
     detail = T.get_template("demo_fifo", examples_dir)
     assert ".sc_binaries.json" not in detail["files"]

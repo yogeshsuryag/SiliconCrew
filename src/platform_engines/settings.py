@@ -42,9 +42,9 @@ class PlatformSettings:
     orfs_service_url: str     # standalone ORFS HTTP service (orfs_engine=remote)
     orfs_service_token: str   # bearer token for that service
 
-    # Light EDA tools (xls / sby / cocotb) execution: "docker" | "native".
-    # native = subprocess in the per-session cwd (Cloud Run safe, no nested
-    # containers); docker = today's container path (local default).
+    # Light EDA tools (xls / sby / cocotb) execution: "native" | "docker".
+    # Native execution is the local demo default; Docker is an optional isolation
+    # path when the corresponding images are available.
     sim_engine: str
 
     # Auth
@@ -134,11 +134,9 @@ class PlatformSettings:
     # means the app is exactly the native-only workbench.
     codex_enabled: bool = False
 
-    # Python analysis tool execution: "docker" (isolated container, local
-    # default) | "native" (host subprocess with scrubbed env + rlimits). Mirrors
-    # sim_engine. The tool is gated OFF on hosted entirely, so this only ever
-    # selects the LOCAL/self-host engine.
-    python_engine: str = "docker"
+    # Python analysis tool execution: native scrubbed subprocess by default;
+    # Docker is an optional isolated-container override.
+    python_engine: str = "native"
     python_image: str = "siliconcrew/python-analysis:1"
 
     @property
@@ -208,7 +206,7 @@ def get_settings() -> PlatformSettings:
     )
 
     orfs_engine = _env("ORFS_ENGINE", "cloud_job" if hosted else "local_docker")
-    sim_engine = _env("SIM_ENGINE", "native" if hosted else "docker")
+    sim_engine = _env("SIM_ENGINE", "native")
     workspace_engine = _env("WORKSPACE_ENGINE", "cloud" if hosted else "local")
     persistence_engine = _env("PERSISTENCE_ENGINE", "postgres" if hosted else "sqlite")
     llm_key_engine = _env("LLM_KEY_ENGINE", "byok" if hosted else "env")
@@ -271,9 +269,8 @@ def get_settings() -> PlatformSettings:
         test_bearer_token=_env("SILICONCREW_TEST_BEARER_TOKEN"),
         # Accept either the new flag or the reference's ENABLE_CODEX_RUNTIME.
         codex_enabled=_flag("CODEX_ENABLED", default=False) or _flag("ENABLE_CODEX_RUNTIME", default=False),
-        # Docker-preferred locally (native fallback when docker is absent); hosted
-        # never runs this tool. See src/tools/run_python.py.
-        python_engine=_env("PYTHON_ENGINE", "native" if hosted else "docker"),
+        # The demo runs analysis locally with its scrubbed subprocess environment.
+        python_engine=_env("PYTHON_ENGINE", "native"),
         python_image=_env("PYTHON_ANALYSIS_IMAGE", "siliconcrew/python-analysis:1"),
     )
 

@@ -220,7 +220,7 @@ export function McpModal({
             className="flex shrink-0 items-center gap-1 hover:text-foreground"
           >
             <Github className="h-3 w-3" aria-hidden />
-            naman-ranka/siliconcrew
+            mfzhang/LLM-RTL-siliconcrew
           </a>
         </div>
       </DialogContent>

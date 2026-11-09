@@ -38,7 +38,7 @@ _FSIZE_BYTES = 256 * 1024 * 1024
 _NPROC = 64
 _TAIL = 16000
 
-# Default pinned analysis image (see docker/python-analysis/Dockerfile, PA12).
+# Optional image used only when PYTHON_ENGINE=docker.
 DEFAULT_PYTHON_IMAGE = "siliconcrew/python-analysis:1"
 
 # Artifact family by extension — mirrors the backend/frontend artifact kinds
@@ -66,9 +66,9 @@ def resolve_engine(engine: Optional[str] = None) -> str:
         try:
             from src.platform_engines.settings import get_settings
 
-            engine = getattr(get_settings(), "python_engine", "docker")
+            engine = getattr(get_settings(), "python_engine", "native")
         except Exception:
-            engine = "docker"
+            engine = "native"
     if engine == "docker" and not shutil.which("docker"):
         return "native"
     return engine

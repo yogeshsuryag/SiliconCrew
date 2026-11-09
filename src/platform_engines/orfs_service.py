@@ -1,9 +1,9 @@
 """Standalone, token-authed ORFS runner service (Phase 2 I7).
 
 Exposes any :class:`~src.platform_engines.orfs_runner.OrfsRunner` over a tiny
-HTTP contract so an **external** client (e.g. the Phase 1 branch) can submit a
-synth job, poll it, and fetch artifacts WITHOUT importing this codebase. The
-wire contract is documented in ``deploy/ORFS_SERVICE.md``.
+HTTP contract so a small external client can submit a synth job, poll it, and
+fetch artifacts without importing the backend. The request/response types live
+in ``src.orfs_client``.
 
 This module is the framework-free *core* (``OrfsService``) plus a thin Starlette
 app factory. The core takes/returns plain JSON-serializable dicts — exactly the
