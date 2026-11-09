@@ -143,6 +143,27 @@ def _ctx(wiring, frames):
         thread_row={"runtime": "codex", "model": "gpt-5.5"}, tier=None, auth_token="tok")
 
 
+def test_default_engine_dirs_live_under_app_data_dir(monkeypatch, tmp_path):
+    monkeypatch.delenv("SILICONCREW_CODEX_STATE_DIR", raising=False)
+    monkeypatch.delenv("SILICONCREW_CODEX_SQLITE_DIR", raising=False)
+    handler = CodexRuntimeHandler(
+        codex_store=None,
+        session_manager=None,
+        llm_key_resolve=lambda uid, model: None,
+        account_home_for=lambda uid: None,
+        system_prompt_loader=lambda: "",
+        default_model="gpt-5.5",
+        normalize_model=lambda model: model,
+        enabled=False,
+        mcp_data_dir=str(tmp_path),
+    )
+
+    engine = handler._engine_factory()
+
+    assert engine.state_dir == str(tmp_path / "codex-runtime")
+    assert engine.local_sqlite_dir == str(tmp_path / "codex-sqlite")
+
+
 # --- a plain text turn ------------------------------------------------------
 
 def test_text_turn_streams_persists_and_records_external_id(wiring):

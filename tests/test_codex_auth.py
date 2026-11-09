@@ -8,7 +8,7 @@ keeps the local-file-only behavior.
 """
 from pathlib import Path
 
-from src.agents.codex.codex_auth import CodexAccountAuthManager, VaultCodexCredentialStore
+from src.agents.codex.codex_auth import CodexAccountAuthManager, VaultCodexCredentialStore, _LoginJob
 
 
 class FakeCredStore:
@@ -112,6 +112,16 @@ def test_selfhost_no_store_uses_local_file_only(tmp_path):
     mgr.persist("bob")       # no-op without a store — must not raise
     mgr.disconnect("bob")
     assert not mgr.is_connected("bob")
+
+
+def test_device_auth_uses_writable_state_dir_for_sdk_sqlite_home(tmp_path, monkeypatch):
+    monkeypatch.delenv("SILICONCREW_CODEX_SQLITE_DIR", raising=False)
+    monkeypatch.setattr(_LoginJob, "start", lambda self: None)
+    manager = CodexAccountAuthManager(str(tmp_path))
+
+    manager.start_device_auth("alice")
+
+    assert (tmp_path / "codex-sqlite" / "account-auth" / "alice").is_dir()
 
 
 def test_vault_adapter_maps_to_reserved_provider_slot():

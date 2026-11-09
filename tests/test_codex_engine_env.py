@@ -33,6 +33,15 @@ def _env_overrides(overrides: tuple[str, ...]) -> dict[str, str]:
     return out
 
 
+def test_engine_default_sqlite_home_is_user_writable(monkeypatch, tmp_path):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("SILICONCREW_CODEX_SQLITE_DIR", raising=False)
+
+    engine = CodexEngine(enabled=True)
+
+    assert engine.local_sqlite_dir == str(tmp_path / ".siliconcrew" / "codex-sqlite")
+
+
 def test_mcp_subprocess_env_never_carries_llm_or_secret_keys(monkeypatch, tmp_path):
     # Simulate a fully-populated hosted production environment, including every
     # secret the parent process legitimately holds.
